@@ -1,0 +1,12 @@
+@url=http://localhost:8080/api/v1
+
+POST {{url}}/signup HTTP/1.1
+Content-type: application/json
+x-api-key: 498bc74df713378687099567f20bc07be606721b81ca010a169609767d8fea4ec3b1cb32a5fdd1835ef049b354957cc527951e3b6d0e4b0ec4e85336c67ed9d4
+
+{
+    "email": "phanhotboy11gmail.com",
+    "password": "im so hot bae",
+    "msisdn": "12304987098",
+    "name": "PhanhotboY"
+}
