@@ -1,6 +1,6 @@
-import { Model } from 'mongoose';
+import { HydratedDocument, Model } from 'mongoose';
 
-export interface IShop {
+interface IRawShop {
   _id: string;
   name: string;
   email: string;
@@ -13,6 +13,8 @@ export interface IShop {
   updatedAt: Date;
 }
 
+export type IShop = HydratedDocument<IRawShop>;
+
 export interface IShopAttrs {
   name: string;
   email: string;
@@ -24,6 +26,7 @@ export interface IShopAttrs {
 }
 
 export interface IShopJWTPayload {
+  userId: string;
   email: string;
 }
 

@@ -1,11 +1,19 @@
 @url=http://localhost:8080/api/v1
 
-POST {{url}}/signup HTTP/1.1
+POST {{url}}/signout HTTP/1.1
 Content-type: application/json
-x-api-key: 498bc74df713378687099567f20bc07be606721b81ca010a169609767d8fea4ec3b1cb32a5fdd1835ef049b354957cc527951e3b6d0e4b0ec4e85336c67ed9d4
+Authorization: qeyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGM0YzYzMmVjOWMyNmMxNjEwYzY2YTYiLCJlbWFpbCI6InBoYW5ob3Rib3kyZ21haWwuY29tIiwiaGVsbCI6IkkgYW0gUGhhbmhvdGJvWSIsImlhdCI6MTY5MTM3MTEwOCwiZXhwIjoxNjkxNTQzOTA4fQ.BQxLY5aYqNIsNgG5Kmssr7RyC9EK5fgg_p-D1pl6FzXdGOL3TAE-NEdNoephvmdMUkeTW2rqxVryqIgQbpKYApa64lPZ0hmrhSvIhBOdQnBfW--NzAONrNQjcGWkUbjocRBhHELC2hm-bSr32lfnIvyzGNQd0KSb7G6RddUfUK5t0j12ntuthSYiFHLD5C6ZdgMOIGSF1S4hGWkl2iMaC5X4i3CAa1JYkL-uFu0hcLpLULZmD6ZWj8ZLjMj51ciSIwAy9DxUe9CBb1IRHlDX82bwR7n79lySkwCRhnQX5Vivn6iYhdbeR4LhWhQfs8jN6vHLBDStt5NQ1pQ-rnFX8QT2RkqAZU9E1_ifRbz9EkQTdhS0cT5cErm8ktZlrcuUo_-UaO_qCt6BEEG6KC5-EIH-AVn0d3FNve02gmANy-TUfv6mlB6he-knbJRwewm5iuObV74mRw0VV3Mw-UCiRizj7d9YVGp6v39VynyQtkRoUcInJckXf6g6F5GWl0yO8qL85EAQXBBv7mu1M7bR3_XUbTcYLe6xsS0xHzEUynbj6n5WkhO7N8PWz4NDWgn4uBk7Bhr5OBvuaK7VkK5dUTl91lWs1O88FanFhsB16Ofe_xhv1QFK_tw9Ne_1mwaRmQieWBEsddFMZNG7SnKAwaBQGx0VLdAWhxRIJFruKTY
+x-api-key: 774a13ab515a63c1a3290e69a87f5f6ebb84b94be0cce5742db9edae1bcb1a0884a5503e51badd79508d2d4e18e73655239121ef8bed44da3d6f5d4b1b68720b
+x-client-id: 64c4c632ec9c26c1610c66a6
+
+
+###
+POST {{url}}/signin HTTP/1.1
+Content-Type: application/json
+x-api-key: 774a13ab515a63c1a3290e69a87f5f6ebb84b94be0cce5742db9edae1bcb1a0884a5503e51badd79508d2d4e18e73655239121ef8bed44da3d6f5d4b1b68720b
 
 {
-    "email": "phanhotboy11gmail.com",
+    "email": "phanhotboy2gmail.com",
     "password": "im so hot bae",
     "msisdn": "12304987098",
     "name": "PhanhotboY"

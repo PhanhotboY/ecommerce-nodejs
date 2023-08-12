@@ -15,11 +15,15 @@ declare global {
 const checkApiKey = async (req: Request, res: Response, next: NextFunction) => {
   const apiKey = req.headers[HEADER.API_KEY]?.toString();
 
-  if (!apiKey) throw new ForbiddenError();
+  if (!apiKey) {
+    throw new ForbiddenError('You should not be here!');
+  }
 
   const objKey = await findActiveApiKey(apiKey);
 
-  if (!objKey) throw new ForbiddenError('Provided Api key does not exist!');
+  if (!objKey) {
+    throw new ForbiddenError('Provided Api key does not exist!');
+  }
 
   req.objKey = objKey;
 

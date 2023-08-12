@@ -4,7 +4,7 @@ import express from 'express';
 import compression from 'compression';
 import 'express-async-errors';
 
-import { errorHandler } from './api/middlewares/error.middleware';
+import { errorHandler, notFoundHandler } from './api/middlewares/error.middleware';
 
 require('dotenv').config();
 
@@ -21,6 +21,8 @@ require('./db/init.mongodb');
 
 app.use(express.Router().use('/api/v1', require('./api/routers')));
 
+// Format not found requests response
+app.use('*', notFoundHandler);
 app.use(errorHandler);
 
 export { app };

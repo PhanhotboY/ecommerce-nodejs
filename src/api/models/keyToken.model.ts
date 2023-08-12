@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose';
 import { KEYTOKEN } from '../constants';
 import { IKeyTokenAttrs, IKeyToken, IKeyTokenModel } from '../interfaces/keyToken.interface';
 
-const keyTokenSchema = new Schema(
+const keyTokenSchema = new Schema<IKeyToken, IKeyTokenModel>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -19,7 +19,7 @@ const keyTokenSchema = new Schema(
       trim: true,
     },
     refreshTokensUsed: {
-      type: Array,
+      type: [String],
       default: [],
     },
     refreshToken: {

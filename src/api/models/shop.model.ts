@@ -4,16 +4,18 @@ import { SHOP } from '../constants';
 import { IShopAttrs, IShop, IShopModel } from '../interfaces/shop.interface';
 import _ from 'lodash';
 
-const shopSchema = new Schema(
+const shopSchema = new Schema<IShop, IShopModel>(
   {
     name: {
       type: String,
       trim: true,
+      required: true,
       maxLength: 150,
     },
     email: {
       type: String,
       unique: true,
+      required: true,
       trim: true,
     },
     password: {
@@ -34,7 +36,7 @@ const shopSchema = new Schema(
       default: false,
     },
     roles: {
-      type: Array<string>,
+      type: [String],
       default: [],
     },
   },

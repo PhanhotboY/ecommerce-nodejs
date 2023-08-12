@@ -1,6 +1,6 @@
-import { Model } from 'mongoose';
+import { Model, HydratedDocument } from 'mongoose';
 
-export interface IApiKey {
+interface IRawApiKey {
   _id: string;
   key: string;
   status: boolean;
@@ -8,6 +8,8 @@ export interface IApiKey {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type IApiKey = HydratedDocument<IRawApiKey>;
 
 export interface IApiKeyAttrs {
   key: string;

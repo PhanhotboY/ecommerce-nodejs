@@ -1,3 +1,4 @@
+import os from 'os';
 import mongoose from 'mongoose';
 
 import { mongodbConfig } from '../configs/config.mongodb';
@@ -40,5 +41,19 @@ class Database {
     return this.instance;
   }
 }
+
+mongoose.connection.on('open', () => {
+  const numConnections = mongoose.connections.length;
+  const numCores = os.cpus().length;
+  const mem = process.memoryUsage().rss;
+  const maxConnection = numCores * 5;
+
+  if (numConnections === maxConnection) {
+    console.log('Connection overload detected!');
+  }
+
+  console.log('Active connections::::', numConnections);
+  console.log('Memory usage::::', mem / 1024 / 1024, 'MB');
+});
 
 export const mongodbInstance = Database.getInstance();

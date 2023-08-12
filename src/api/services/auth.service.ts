@@ -1,16 +1,60 @@
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
 
 import { ROLE } from '../constants';
+import { getInfoData } from '../utils';
+import { findByEmail } from './shop.service';
 import { ShopModel } from '../models/shop.model';
-import { createTokenPair } from '../auth/authUtils';
-import { KeyTokenService } from './keyToken.service';
-import { BadRequestError, InternalServerError } from '../core/errors';
-import { IShopAttrs } from '../interfaces/shop.interface';
+import { createTokenPair, generateKeyPair } from '../auth/authUtils';
+import { IShopAttrs, IShopJWTPayload } from '../interfaces/shop.interface';
+import { IKeyToken, IKeyTokenAttrs } from '../interfaces/keyToken.interface';
+import { BadRequestError, ForbiddenError, InternalServerError } from '../core/errors';
+import { removeKeyById, createKeyToken, updateRefreshToken } from './keyToken.service';
 
 export class AuthService {
-  static async signIn({ email, password }: { email: string; password: string }) {
-    return { email, password };
+  static async signIn({
+    email,
+    password,
+    refreshToken = null,
+  }: {
+    email: string;
+    password: string;
+    refreshToken: string | null;
+  }) {
+    const foundShop = await findByEmail(email);
+
+    if (!foundShop) {
+      throw new BadRequestError('Shop is not registered!');
+    }
+
+    const isMatchPwd = bcrypt.compareSync(password, foundShop.password);
+
+    if (!isMatchPwd) {
+      throw new BadRequestError('Authentication failed!');
+    }
+
+    const { privateKey, publicKey } = generateKeyPair();
+
+    const tokens = createTokenPair({
+      payload: { userId: foundShop._id, email: foundShop.email },
+      privateKey,
+      publicKey,
+    });
+
+    const keyTokenAttrs: IKeyTokenAttrs = {
+      user: foundShop._id,
+      privateKey,
+      publicKey,
+      refreshToken: tokens.refreshToken,
+    };
+
+    if (refreshToken) keyTokenAttrs.refreshTokensUsed = [refreshToken];
+
+    await createKeyToken(keyTokenAttrs);
+
+    return {
+      shop: getInfoData(foundShop, { fields: ['id', 'name', 'email', 'msisdn'] }),
+      tokens,
+    };
   }
 
   static async signUp({ name, email, password, msisdn }: IShopAttrs) {
@@ -34,33 +78,60 @@ export class AuthService {
       throw new InternalServerError('Fail to create new shop!');
     }
 
-    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 4096,
-      publicKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem',
-      },
-      privateKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem',
-      },
-    });
+    const { privateKey, publicKey } = generateKeyPair();
 
-    const keyToken = await KeyTokenService.createKeyToken({
-      userId: newShop._id,
+    const tokens = createTokenPair({
+      payload: { userId: newShop._id, email: newShop.email },
       privateKey,
       publicKey,
     });
 
+    await createKeyToken({
+      user: newShop._id,
+      privateKey,
+      publicKey,
+      refreshToken: tokens.refreshToken,
+    });
+
+    return {
+      shop: getInfoData(newShop, { fields: ['id', 'name', 'email', 'msisdn'] }),
+      tokens,
+    };
+  }
+
+  static async signOut(id: string) {
+    return await removeKeyById(id);
+  }
+
+  static async refreshTokenHandler({
+    keyToken,
+    refreshToken,
+    user,
+  }: {
+    keyToken: IKeyToken;
+    refreshToken: string;
+    user: IShopJWTPayload;
+  }) {
+    // Check if refreshToken has been used?
+    if (keyToken.refreshTokensUsed.includes(refreshToken)) {
+      // The token is used for the second time => malicious behavior => require user to log in again
+      await removeKeyById(keyToken._id);
+      throw new ForbiddenError('Something wrong happened. Please login again!!');
+    }
+
+    // The token is used for the first time => valid
+    // Token not exists in DB
+    if (keyToken.refreshToken !== refreshToken) throw new BadRequestError('Invalid request.');
+
+    // Token exists in DB
     const tokens = createTokenPair({
-      payload: { email: newShop.email },
+      payload: user,
       privateKey: keyToken.privateKey,
       publicKey: keyToken.publicKey,
     });
 
-    return {
-      shop: newShop,
-      tokens,
-    };
+    await updateRefreshToken(keyToken, refreshToken, tokens.refreshToken);
+
+    return tokens;
   }
 }

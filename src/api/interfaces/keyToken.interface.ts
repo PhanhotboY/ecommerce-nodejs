@@ -1,8 +1,8 @@
-import { Model, Schema } from 'mongoose';
+import { Model, HydratedDocument, ObjectId } from 'mongoose';
 
-export interface IKeyToken {
+interface IRawKeyToken {
   _id: string;
-  user: string;
+  user: string | ObjectId;
   publicKey: string;
   privateKey: string;
   refreshTokensUsed: string[];
@@ -10,6 +10,8 @@ export interface IKeyToken {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type IKeyToken = HydratedDocument<IRawKeyToken>;
 
 export interface IKeyTokenAttrs {
   user: string;

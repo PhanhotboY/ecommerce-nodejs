@@ -8,6 +8,7 @@ router.use(checkApiKey);
 //check api key's permission
 router.use(checkPermission('0000'));
 
+router.use('/products', require('./product'));
 router.use('/', require('./auth'));
 
 module.exports = router;

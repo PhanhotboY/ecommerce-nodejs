@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose';
 import { APIKEY } from '../constants';
 import { IApiKey, IApiKeyAttrs, IApiKeyModel } from '../interfaces/apiKey.interface';
 
-const apiKeySchema = new Schema(
+const apiKeySchema = new Schema<IApiKey, IApiKeyModel>(
   {
     key: {
       type: String,
