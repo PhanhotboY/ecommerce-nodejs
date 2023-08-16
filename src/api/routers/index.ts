@@ -9,6 +9,7 @@ router.use(checkApiKey);
 router.use(checkPermission('0000'));
 
 router.use('/products', require('./product'));
+router.use('/discounts', require('./discount'));
 router.use('/', require('./auth'));
 
 module.exports = router;

@@ -1,104 +1,49 @@
 import {
-  ProductModel,
-  ClothingModel,
-  ElectronicModel,
-  FurnitureModel,
-} from '../models/product.model';
-import { getInfoData } from '../utils';
-import { BadRequestError, InternalServerError } from '../core/errors';
-import {
-  getAllDraftProducts,
-  getAllProducts,
-  publishProduct,
-  unpublishProduct,
   searchProducts,
+  publishProduct,
+  getAllProducts,
+  unpublishProduct,
+  deleteProduct,
+  restoreProduct,
+  getAllDraftProducts,
+  getAllDeletedProducts,
+  findProduct,
+  getProductDetails,
 } from '../models/repositories/product.repo';
-import { IProduct, IProductAttrs } from '../interfaces/product.interface';
+import { getInfoData, removeNestedNullish } from '../utils';
+import { IProductAttrs } from '../interfaces/product.interface';
+import { InternalServerError } from '../core/errors';
+import { ProductFactory } from '../factories/product';
 
-abstract class Product {
-  static async createProduct(product: IProductAttrs): Promise<IProduct> {
-    return await ProductModel.build(product);
-  }
-}
-
-class Electronic extends Product {
+class ProductService {
   static async createProduct(product: IProductAttrs) {
-    const newElectronic = await ElectronicModel.create({
-      ...product.attributes,
-      shop: product.shop,
-    });
-    if (!newElectronic) throw new InternalServerError('Server error::: Cannot create new product!');
+    const Strategy = ProductFactory.createStrategy(product.type);
 
-    product._id = newElectronic._id;
-    const newProduct = await super.createProduct(product);
-    if (!newProduct) throw new InternalServerError('Server error:::: Cannot create new product!');
-
-    return newProduct;
-  }
-}
-
-class Clothing extends Product {
-  static async createProduct(product: IProductAttrs) {
-    const newClothing = await ClothingModel.create({ ...product.attributes, shop: product.shop });
-    if (!newClothing) throw new InternalServerError('Server error::: Cannot create new product!');
-
-    product._id = newClothing._id;
-    const newProduct = await super.createProduct(product);
-    if (!newProduct) throw new InternalServerError('Server error:::: Cannot create new product!');
-
-    return newProduct;
-  }
-}
-
-class Furniture extends Product {
-  static async createProduct(product: IProductAttrs) {
-    const newFurniture = await FurnitureModel.create({ ...product.attributes, shop: product.shop });
-    if (!newFurniture) throw new InternalServerError('Server error::: Cannot create new product!');
-
-    product._id = newFurniture._id;
-    const newProduct = await super.createProduct(product);
-    if (!newProduct) throw new InternalServerError('Server error:::: Cannot create new product!');
-
-    return newProduct;
-  }
-}
-
-const productStrategy = {
-  Electronic,
-  Furniture,
-  Clothing,
-};
-
-class ProductFactory {
-  static productsRegistered: Record<string, Product>;
-
-  static registerProduct(productTypes: Record<string, Product>) {
-    Object.keys(productTypes).forEach((productType) => {
-      // @ts-ignore
-      if (!productTypes[productType] instanceof Product)
-        throw new InternalServerError('Fail to register new product type!');
-    });
-
-    this.productsRegistered = { ...this.productsRegistered, ...productTypes };
-  }
-
-  static async createProduct(product: IProductAttrs) {
-    if (!Object.keys(productStrategy).includes(product.type))
-      throw new BadRequestError(`Product type "${product.type}" is not supported!`);
-
-    const newProduct = await productStrategy[product.type].createProduct(product);
+    const newProduct = await Strategy.createProduct(product);
 
     return getInfoData(newProduct.toObject(), {
-      without: ['isDraft', 'isPublished', '__v', 'createdAt', 'updatedAt'],
+      without: ['__v', 'createdAt', 'updatedAt'],
     });
   }
 
-  static async getAllDraftProducts({ shop, limit = 60, skip = 0 }: IProductQuery) {
+  static async getAllProducts({ limit = 50, skip = 0 }: IProductQuery) {
+    return getAllProducts({}, { limit, skip });
+  }
+
+  static async getAllDraftProducts({ shop, limit = 50, skip = 0 }: IProductQuery) {
     return getAllDraftProducts({ shop }, { limit, skip });
   }
 
-  static async getAllProducts({ shop, limit = 60, skip = 0 }: IProductQuery) {
+  static async getAllDeletedProducts({ shop, limit = 50, skip = 0 }: IProductQuery) {
+    return getAllDeletedProducts({ shop }, { limit, skip });
+  }
+
+  static async getAllPublished({ shop, limit = 50, skip = 0 }: IProductQuery) {
     return getAllProducts({ shop }, { limit, skip });
+  }
+
+  static async getProductDetails(productId: string, shop?: string) {
+    return getProductDetails(productId, shop);
   }
 
   static async searchProducts(search: string) {
@@ -113,17 +58,51 @@ class ProductFactory {
     return unpublishProduct(shop, productId);
   }
 
-  static async updateProduct(shop: string, productId: string) {
-    return unpublishProduct(shop, productId);
+  static async updateProduct(shop: string, productId: string, payload: IProductAttrs) {
+    const foundProduct = await findProduct(shop, productId);
+
+    const ProductStrategy = ProductFactory.createStrategy(foundProduct.type);
+
+    const update = await ProductStrategy.updateProduct(
+      shop,
+      productId,
+      removeNestedNullish(payload)
+    );
+    if (!update) throw new InternalServerError('Update product fail!!');
+
+    return getInfoData(update, {
+      without: ['__v'],
+    });
+  }
+
+  static async restoreProduct(shop: string, productId: string) {
+    return restoreProduct(shop, productId);
+  }
+
+  static async deleteProduct(shop: string, productId: string) {
+    return deleteProduct(shop, productId);
+  }
+
+  static async destroyProduct(shop: string, productId: string) {
+    const foundProduct = await findProduct(shop, productId, true);
+
+    const Strategy = ProductFactory.createStrategy(foundProduct.type);
+
+    const result = await Strategy.destroyProduct(shop, productId);
+
+    return getInfoData(result, {
+      without: ['__v', 'createdAt', 'updatedAt'],
+    });
   }
 }
 
+// init factories
+import '../factories/product';
+
 interface IProductQuery {
-  shop: string;
+  shop?: string;
   limit?: string | number;
   skip?: string | number;
 }
 
-ProductFactory.registerProduct(productStrategy);
-
-export { ProductFactory as ProductService };
+export { ProductService };

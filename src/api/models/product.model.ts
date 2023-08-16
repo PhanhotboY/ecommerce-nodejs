@@ -1,5 +1,5 @@
 import slugify from 'slugify';
-import { Schema, model, models } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
 import { PRODUCT } from '../constants';
 import {
@@ -71,6 +71,11 @@ const productSchema = new Schema<IProduct, IProductModel>(
       index: true,
       select: false, // Unselectable field
     },
+    deletedAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
   },
   {
     timestamps: true,
@@ -86,6 +91,11 @@ const clothingSchema = new Schema<IClothing, IProductModel>(
     shop: {
       type: Schema.Types.ObjectId,
       ref: 'Shop',
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+      select: false,
     },
   },
   {
@@ -103,6 +113,11 @@ const electronicSchema = new Schema<IElectronic, IProductModel>(
       type: Schema.Types.ObjectId,
       ref: 'Shop',
     },
+    deletedAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
   },
   {
     collection: PRODUCT.COLLECTION_ELECTRON_NAME,
@@ -119,10 +134,22 @@ const furnitureSchema = new Schema<IFurniture, IProductModel>(
       type: Schema.Types.ObjectId,
       ref: 'Shop',
     },
+    deletedAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
   },
   {
     collection: PRODUCT.COLLECTION_FURNITURE_NAME,
     timestamps: true,
+    toJSON: {
+      transform: (doc, ret) => {
+        ret.id = doc._id;
+        delete ret._id;
+        return ret;
+      },
+    },
   }
 );
 

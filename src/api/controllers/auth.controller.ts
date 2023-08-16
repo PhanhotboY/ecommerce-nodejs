@@ -34,7 +34,7 @@ export class AuthController {
     OK({
       res,
       message: 'Logout Success!',
-      metadata: await AuthService.signOut(req.keyToken._id),
+      metadata: await AuthService.signOut(req.keyToken._id as string),
       link: {
         signUp: { href: '/api/v1/signup', method: 'POST' },
         signIn: { href: '/api/v1/signin', method: 'POST' },

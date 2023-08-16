@@ -7,9 +7,8 @@ declare global {
   }
 }
 
-const omit = (obj: any, fields: string[]) => {
-  return Object.keys(obj).reduce((object, field) => {
-    // @ts-ignore
+const omit = (obj: Partial<Object>, fields: string[]) => {
+  return (Object.keys(obj) as Array<keyof typeof obj>).reduce((object, field) => {
     if (!fields.includes(field)) object[field] = obj[field];
 
     return object;
@@ -19,7 +18,8 @@ const omit = (obj: any, fields: string[]) => {
 function getInfoData(
   obj: Object,
   { fields = [], without = [] }: Partial<Record<'fields' | 'without', string[]>>
-) {
+): Object {
+  if (Array.isArray(obj)) return obj.map((ele) => getInfoData(ele, {}));
   if (obj?._id) {
     obj.id = obj._id;
 
@@ -31,6 +31,10 @@ function getInfoData(
 }
 
 const isNullish = (val: any) => (val ?? null) === null;
+const isEmptyObj = (obj: Object) => !Object.keys(obj).length;
+const getSkipNumber = (limit: number, page: number) => limit * page;
+const isObj = (obj: any) => obj instanceof Object && !Array.isArray(obj);
+const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
 const removeNullishElements = (arr: Array<any>) => {
   const final: typeof arr = [];
@@ -38,6 +42,7 @@ const removeNullishElements = (arr: Array<any>) => {
   arr.forEach((ele) => {
     if (!isNullish(ele)) {
       const result = removeNestedNullish(ele);
+      if (result instanceof Object && isEmptyObj(result)) return;
 
       final[final.length] = result;
     }
@@ -49,27 +54,37 @@ const removeNullishElements = (arr: Array<any>) => {
 const removeNullishAttributes = (obj: Object) => {
   const final: typeof obj = {};
 
-  for (const key in obj) {
-    // @ts-ignore
+  (Object.keys(obj) as Array<keyof typeof obj>).forEach((key) => {
     if (!isNullish(obj[key])) {
-      // @ts-ignore
       const result = removeNestedNullish(obj[key]);
 
-      if (result instanceof Object && !Object.keys(result).length) return;
+      if (result instanceof Object && isEmptyObj(result)) return;
 
-      // @ts-ignore
       final[key] = result;
     }
-  }
+  });
 
   return final;
 };
 
-const removeNestedNullish = (any: any) => {
-  if (any instanceof Array) return removeNullishElements(any as Array<any>);
-  if (any instanceof Object) return removeNullishAttributes(any as Object);
+const removeNestedNullish = <T>(any: any): T => {
+  if (any instanceof Array) return removeNullishElements(any as Array<any>) as T;
+  if (any instanceof Object) return removeNullishAttributes(any as Object) as T;
 
   return any;
 };
 
-export { getInfoData, removeNestedNullish };
+function flattenObj(obj: Object, parent?: string, res: { [key: string]: any } = {}) {
+  (Object.keys(obj) as Array<keyof typeof obj>).forEach((key) => {
+    let propName = parent ? parent + '.' + key : key;
+    if (isObj(obj[key])) {
+      flattenObj(obj[key], propName, res);
+    } else {
+      res[propName] = obj[key];
+    }
+  });
+
+  return res;
+}
+
+export { getInfoData, removeNestedNullish, flattenObj, capitalizeFirstLetter, getSkipNumber };

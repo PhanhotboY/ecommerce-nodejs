@@ -1,7 +1,7 @@
 import { Model, HydratedDocument, ObjectId } from 'mongoose';
 
 interface IRawKeyToken {
-  _id: string;
+  _id: string | ObjectId;
   user: string | ObjectId;
   publicKey: string;
   privateKey: string;

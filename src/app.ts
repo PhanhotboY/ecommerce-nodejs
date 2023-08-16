@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 //connect to database
 require('./db/init.mongodb');
 
+// init routers
 app.use(express.Router().use('/api/v1', require('./api/routers')));
 
 // Format not found requests response

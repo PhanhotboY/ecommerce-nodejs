@@ -1,16 +1,6 @@
-export * from './user.constant';
+export * from './app.constant';
+export * from './shop.constant';
 export * from './product.constant';
-
-export const SHOP = {
-  COLLECTION_NAME: 'Shops',
-  DOCUMENT_NAME: 'Shop',
-};
-
-export const ROLE = {
-  SHOP: 'qbh-93h8cg',
-  ADMIN: 'qtv-4kjdfo',
-  USER: 'nmh-d8kj4h',
-};
 
 export const KEYTOKEN = {
   COLLECTION_NAME: 'KeyTokens',

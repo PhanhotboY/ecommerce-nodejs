@@ -15,6 +15,7 @@ export interface IRawProduct {
   variations: string[];
   isDraft: boolean;
   isPublished: boolean;
+  deletedAt?: Date;
 }
 
 export interface IRawClothing {
@@ -23,6 +24,7 @@ export interface IRawClothing {
   size: String;
   material: String;
   shop: string | ObjectId;
+  deletedAt?: Date;
 }
 
 export interface IRawElectronic {
@@ -31,6 +33,7 @@ export interface IRawElectronic {
   model: String;
   color: String;
   shop: string | ObjectId;
+  deletedAt?: Date;
 }
 
 export interface IRawFurniture {
@@ -38,6 +41,7 @@ export interface IRawFurniture {
   size: String;
   material: String;
   shop: string | ObjectId;
+  deletedAt?: Date;
 }
 
 export type IProduct = HydratedDocument<IRawProduct>;
@@ -46,7 +50,10 @@ export type IFurniture = HydratedDocument<IRawFurniture>;
 export type IElectronic = HydratedDocument<IRawElectronic>;
 
 export interface IProductAttrs
-  extends Omit<IRawProduct, '_id' | 'ratingsAverage' | 'slug' | 'isDraft' | 'isPublished'> {
+  extends Omit<
+    IRawProduct,
+    '_id' | 'ratingsAverage' | 'slug' | 'isDraft' | 'isPublished' | 'deletedAt'
+  > {
   _id?: string;
 }
 // export interface IProductAttrs {
