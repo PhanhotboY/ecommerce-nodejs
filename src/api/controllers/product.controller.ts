@@ -28,13 +28,13 @@ export class ProductController {
   static async getAllProducts(req: Request, res: Response, next: NextFunction) {
     const result = await ProductService.getAllProducts({
       limit: req.query.limit as string,
-      skip: req.query.skip as string,
+      page: req.query.skip as string,
     });
 
     OK({
       res,
       message: 'Get all products successfully!',
-      metadata: getInfoData(result, {}),
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products?limit=50&skip=0', method: 'GET' },
       },
@@ -45,13 +45,13 @@ export class ProductController {
     const result = await ProductService.getAllPublished({
       shop: req.user.userId,
       limit: req.query.limit as string,
-      skip: req.query.skip as string,
+      page: req.query.skip as string,
     });
 
     OK({
       res,
       message: 'Get all published products successfully!',
-      metadata: getInfoData(result, {}),
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products/published', method: 'GET' },
       },
@@ -62,13 +62,13 @@ export class ProductController {
     const result = await ProductService.getAllDeletedProducts({
       shop: req.user.userId,
       limit: req.query.limit as string,
-      skip: req.query.skip as string,
+      page: req.query.page as string,
     });
 
     OK({
       res,
       message: 'Get all published products successfully!',
-      metadata: getInfoData(result, {}),
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products/deleted', method: 'GET' },
       },
@@ -81,7 +81,7 @@ export class ProductController {
     OK({
       res,
       message: 'Get all draft products successfully!',
-      metadata: getInfoData(result, {}),
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products/draft', method: 'GET' },
         'search-product': { href: '/api/v1/products', method: 'GET' },
@@ -95,7 +95,7 @@ export class ProductController {
     OK({
       res,
       message: 'Search product successfully!',
-      metadata: getInfoData(result, {}),
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products/search/:search', method: 'GET' },
       },
@@ -108,7 +108,7 @@ export class ProductController {
     OK({
       res,
       message: `Action operated successfully!`,
-      metadata: result ? getInfoData(result, {}) : {},
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products/details/:productId', method: 'GET' },
         'search-product': { href: '/api/v1/products/:search', method: 'GET' },
@@ -117,12 +117,15 @@ export class ProductController {
   }
 
   static async getProductDetailsForShop(req: Request, res: Response, next: NextFunction) {
-    const result = await ProductService.getProductDetails(req.params.productId, req.user.userId);
+    const result = await ProductService.getProductDetailsForShop(
+      req.params.productId,
+      req.user.userId
+    );
 
     OK({
       res,
       message: `Action operated successfully!`,
-      metadata: result ? getInfoData(result, {}) : {},
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products/:productId', method: 'PATCH' },
         'search-product': { href: '/api/v1/products/:search', method: 'GET' },
@@ -145,7 +148,7 @@ export class ProductController {
     OK({
       res,
       message: `Action operated successfully!`,
-      metadata: getInfoData(result, {}),
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products/:productId', method: 'PATCH' },
         'search-product': { href: '/api/v1/products/:search', method: 'GET' },
@@ -159,7 +162,7 @@ export class ProductController {
     OK({
       res,
       message: `Action operated successfully!`,
-      metadata: getInfoData(result, {}),
+      metadata: getInfoData(result),
       link: {
         self: { href: '/api/v1/products/:productId', method: 'PATCH' },
         'search-product': { href: '/api/v1/products/:search', method: 'GET' },

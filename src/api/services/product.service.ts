@@ -1,19 +1,21 @@
 import {
+  findProduct,
+  deleteProduct,
   searchProducts,
   publishProduct,
   getAllProducts,
-  unpublishProduct,
-  deleteProduct,
   restoreProduct,
+  unpublishProduct,
+  getProductDetails,
   getAllDraftProducts,
   getAllDeletedProducts,
-  findProduct,
-  getProductDetails,
+  getProductDetailsForShop,
 } from '../models/repositories/product.repo';
-import { getInfoData, removeNestedNullish } from '../utils';
-import { IProductAttrs } from '../interfaces/product.interface';
+import { BadRequestError } from '../core/errors';
 import { InternalServerError } from '../core/errors';
 import { ProductFactory } from '../factories/product';
+import { getInfoData, removeNestedNullish } from '../utils';
+import { IProductAttrs } from '../interfaces/product.interface';
 
 class ProductService {
   static async createProduct(product: IProductAttrs) {
@@ -26,24 +28,28 @@ class ProductService {
     });
   }
 
-  static async getAllProducts({ limit = 50, skip = 0 }: IProductQuery) {
-    return getAllProducts({}, { limit, skip });
+  static async getAllProducts({ limit, page }: IProductQuery) {
+    return getAllProducts({}, { limit, page });
   }
 
-  static async getAllDraftProducts({ shop, limit = 50, skip = 0 }: IProductQuery) {
-    return getAllDraftProducts({ shop }, { limit, skip });
+  static async getAllDraftProducts({ shop, limit, page }: IProductQuery) {
+    return getAllDraftProducts({ shop }, { limit, page });
   }
 
-  static async getAllDeletedProducts({ shop, limit = 50, skip = 0 }: IProductQuery) {
-    return getAllDeletedProducts({ shop }, { limit, skip });
+  static async getAllDeletedProducts({ shop, limit, page }: IProductQuery) {
+    return getAllDeletedProducts({ shop }, { limit, page });
   }
 
-  static async getAllPublished({ shop, limit = 50, skip = 0 }: IProductQuery) {
-    return getAllProducts({ shop }, { limit, skip });
+  static async getAllPublished({ shop, limit, page }: IProductQuery) {
+    return getAllProducts({ shop }, { limit, page });
   }
 
-  static async getProductDetails(productId: string, shop?: string) {
-    return getProductDetails(productId, shop);
+  static async getProductDetails(productId: string) {
+    return getProductDetails(productId);
+  }
+
+  static async getProductDetailsForShop(productId: string, shopId: string) {
+    return getProductDetailsForShop(productId, shopId);
   }
 
   static async searchProducts(search: string) {
@@ -59,7 +65,8 @@ class ProductService {
   }
 
   static async updateProduct(shop: string, productId: string, payload: IProductAttrs) {
-    const foundProduct = await findProduct(shop, productId);
+    const foundProduct = await findProduct({ shop, _id: productId });
+    if (!foundProduct) throw new BadRequestError('Product does not exist!');
 
     const ProductStrategy = ProductFactory.createStrategy(foundProduct.type);
 
@@ -84,7 +91,8 @@ class ProductService {
   }
 
   static async destroyProduct(shop: string, productId: string) {
-    const foundProduct = await findProduct(shop, productId, true);
+    const foundProduct = await findProduct({ shop, _id: productId }, true);
+    if (!foundProduct) throw new BadRequestError('Product does not exist!');
 
     const Strategy = ProductFactory.createStrategy(foundProduct.type);
 
@@ -102,7 +110,7 @@ import '../factories/product';
 interface IProductQuery {
   shop?: string;
   limit?: string | number;
-  skip?: string | number;
+  page?: string | number;
 }
 
 export { ProductService };

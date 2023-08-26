@@ -6,8 +6,8 @@ import { mongodbConfig } from '../configs/config.mongodb';
 const { dbHost, dbName, dbPort, dbUser, dbPwd } = mongodbConfig;
 
 //Using Singleton pattern to init mongodb
-class Database {
-  static instance: Database;
+class MongoDB {
+  static instance: MongoDB;
 
   constructor(type: string = 'mongodb') {
     this.connect(type);
@@ -35,7 +35,7 @@ class Database {
 
   static getInstance() {
     if (!this.instance) {
-      this.instance = new Database();
+      this.instance = new MongoDB();
     }
 
     return this.instance;
@@ -56,4 +56,4 @@ mongoose.connection.on('open', () => {
   console.log('Memory usage::::', mem / 1024 / 1024, 'MB');
 });
 
-export const mongodbInstance = Database.getInstance();
+export const mongodbInstance = MongoDB.getInstance();

@@ -115,7 +115,7 @@ export class AuthService {
     // Check if refreshToken has been used?
     if (keyToken.refreshTokensUsed.includes(refreshToken)) {
       // The token is used for the second time => malicious behavior => require user to log in again
-      await removeKeyById(keyToken._id);
+      await removeKeyById(keyToken._id as string);
       throw new ForbiddenError('Something wrong happened. Please login again!!');
     }
 

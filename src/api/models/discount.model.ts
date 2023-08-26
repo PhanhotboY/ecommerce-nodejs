@@ -18,7 +18,7 @@ const discountSchema = new Schema<IDiscount, IDiscountModel>(
     quantity_per_user: { type: Number, required: true },
     min_order_value: { type: Number, required: true },
     shopId: { type: Types.ObjectId, required: true, ref: 'Shop' },
-    isActive: { type: Boolean, required: true, default: false },
+    isActive: { type: Boolean, required: true, default: true },
     apply_type: { type: String, enum: ['all', 'specific'], required: true },
     product_ids: { type: [Types.ObjectId], required: true, default: [], ref: 'Product' },
   },

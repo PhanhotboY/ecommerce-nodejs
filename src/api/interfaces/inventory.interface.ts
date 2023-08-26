@@ -1,8 +1,8 @@
 import { HydratedDocument, Model, ObjectId } from 'mongoose';
 
-interface IReservation {
-  cartId: string | ObjectId;
-  stock: number;
+export interface IReservation {
+  userId: string | ObjectId;
+  quantity: number;
   createdAt: Date;
 }
 

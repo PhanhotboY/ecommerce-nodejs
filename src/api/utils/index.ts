@@ -7,7 +7,9 @@ declare global {
   }
 }
 
-const omit = (obj: Partial<Object>, fields: string[]) => {
+const omit = (obj: Object, fields?: string[]) => {
+  if (!fields || !fields.length) return obj;
+
   return (Object.keys(obj) as Array<keyof typeof obj>).reduce((object, field) => {
     if (!fields.includes(field)) object[field] = obj[field];
 
@@ -17,22 +19,23 @@ const omit = (obj: Partial<Object>, fields: string[]) => {
 
 function getInfoData(
   obj: Object,
-  { fields = [], without = [] }: Partial<Record<'fields' | 'without', string[]>>
+  options?: Partial<Record<'fields' | 'without', string[]>>
 ): Object {
   if (Array.isArray(obj)) return obj.map((ele) => getInfoData(ele, {}));
+
   if (obj?._id) {
     obj.id = obj._id;
 
     delete obj._id;
   }
 
-  const picked = _.isEmpty(fields) ? obj : _.pick(obj, fields!);
-  return omit(picked, without);
+  const picked = _.isEmpty(options?.fields || []) ? obj : _.pick(obj, options?.fields!);
+  return omit(picked as Object, options?.without);
 }
 
 const isNullish = (val: any) => (val ?? null) === null;
 const isEmptyObj = (obj: Object) => !Object.keys(obj).length;
-const getSkipNumber = (limit: number, page: number) => limit * page;
+const getSkipNumber = (limit: number, page: number) => limit * (page - 1);
 const isObj = (obj: any) => obj instanceof Object && !Array.isArray(obj);
 const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -87,4 +90,12 @@ function flattenObj(obj: Object, parent?: string, res: { [key: string]: any } = 
   return res;
 }
 
-export { getInfoData, removeNestedNullish, flattenObj, capitalizeFirstLetter, getSkipNumber };
+export {
+  isNullish,
+  flattenObj,
+  isEmptyObj,
+  getInfoData,
+  getSkipNumber,
+  removeNestedNullish,
+  capitalizeFirstLetter,
+};

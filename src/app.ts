@@ -18,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //connect to database
 require('./db/init.mongodb');
+require('./db/init.redis');
 
 // init routers
 app.use(express.Router().use('/api/v1', require('./api/routers')));

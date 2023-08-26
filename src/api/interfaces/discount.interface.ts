@@ -11,13 +11,13 @@ export interface IRawDiscount {
   end_date: Date;
   quantity: number;
   used_count: number;
-  used_users: string[];
+  used_users: ObjectId[];
   quantity_per_user: number;
   min_order_value: number;
   shopId: string | ObjectId;
   isActive: boolean;
   apply_type: 'all' | 'specific';
-  product_ids: string[];
+  product_ids: ObjectId[];
 }
 
 export interface IDiscount extends HydratedDocument<IRawDiscount> {}
