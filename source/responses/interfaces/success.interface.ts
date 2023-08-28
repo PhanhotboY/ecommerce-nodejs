@@ -1,5 +1,14 @@
 import { Response } from 'express';
 
+// Following HAL standard
+// Another available standard: JSON-LD
+interface IHATEOAS {
+  self: {
+    href: string;
+    method: string;
+  };
+}
+
 export interface ISuccessAttrs {
   res: Response;
   message?: string;
