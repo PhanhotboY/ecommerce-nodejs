@@ -1,4 +1,4 @@
-import { IResponseError } from '../../interfaces/error.inerface';
+import { IResponseError } from '../../interfaces/error.interface';
 
 export abstract class ErrorBase extends Error {
   abstract status: number;
