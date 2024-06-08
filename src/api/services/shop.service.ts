@@ -1,8 +1,13 @@
 import { ShopModel } from '../models/shop.model';
 import { IShop } from '../interfaces/shop.interface';
+import { findById, findByEmail } from '../models/repositories/shop.repo';
 
-const findByEmail = async (email: string) => {
-  return await ShopModel.findOne<IShop>({ email }).lean();
+const findShopByEmail = async (email: string) => {
+  return await findByEmail(email);
 };
 
-export { findByEmail };
+const findShopById = async (id: string) => {
+  return await findById(id);
+};
+
+export { findShopByEmail, findShopById };

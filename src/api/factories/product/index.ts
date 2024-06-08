@@ -4,15 +4,22 @@ import { ProductStrategy } from './Product.factory';
 import { BadRequestError } from '../../core/errors';
 
 export abstract class ProductFactory {
-  private static productsRegistered: Record<string, new () => ProductFactoryAbstract> = {};
+  private static productsRegistered: Record<
+    string,
+    new () => ProductFactoryAbstract
+  > = {};
 
-  static registerProduct(type: string, classRef: new () => ProductFactoryAbstract) {
+  static registerProduct(
+    type: string,
+    classRef: new () => ProductFactoryAbstract
+  ) {
     this.productsRegistered[type] = classRef;
   }
 
   static createStrategy(type: string) {
     const Factory = this.productsRegistered[type];
-    if (!Factory) throw new BadRequestError(`Product type "${type}" is not supported!`);
+    if (!Factory)
+      throw new BadRequestError(`Product type "${type}" is not supported!`);
 
     return new Factory().createStrategy();
   }

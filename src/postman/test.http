@@ -8,7 +8,7 @@ x-client-id: 64c4c632ec9c26c1610c66a6
 
 
 ###
-POST {{url}}/signin HTTP/1.1
+POST {{url}}/auth/logout/hello HTTP/1.1
 Content-Type: application/json
 x-api-key: 774a13ab515a63c1a3290e69a87f5f6ebb84b94be0cce5742db9edae1bcb1a0884a5503e51badd79508d2d4e18e73655239121ef8bed44da3d6f5d4b1b68720b
 

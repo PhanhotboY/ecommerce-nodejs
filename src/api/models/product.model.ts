@@ -1,7 +1,7 @@
 import slugify from 'slugify';
 import { Schema, model } from 'mongoose';
 
-import { PRODUCT } from '../constants';
+import { PRODUCT, SHOP } from '../constants';
 import {
   IClothing,
   IElectronic,
@@ -13,65 +13,65 @@ import { IShopAttrs } from '../interfaces/shop.interface';
 
 const productSchema = new Schema<IProduct, IProductModel>(
   {
-    name: {
+    product_name: {
       type: String,
       trim: true,
       maxLength: 150,
     },
-    thumb: {
+    product_thumb: {
       type: String,
       trim: true,
     },
-    description: {
+    product_description: {
       type: String,
     },
-    slug: String,
-    price: {
+    product_slug: String,
+    product_price: {
       type: Number,
       required: true,
     },
-    quantity: {
+    product_quantity: {
       type: Number,
       required: true,
     },
-    type: {
+    product_type: {
       type: String,
       required: true,
       enum: ['Electronic', 'Clothing', 'Furniture'],
     },
-    shop: {
+    product_shop: {
       type: Schema.Types.ObjectId,
       ref: 'Shop',
     },
-    attributes: {
+    product_attributes: {
       type: Schema.Types.Mixed,
       required: true,
     },
     // more
-    ratingsAverage: {
+    product_ratingsAverage: {
       type: Number,
       default: 4.5,
       min: [1, 'Rating must be above 1.0'],
       max: [5, 'Rating must be above 5.0'],
       set: (val: number) => Math.round(val * 10) / 10,
     },
-    variations: {
+    product_variations: {
       type: [String],
       default: [],
     },
-    isDraft: {
+    product_isDraft: {
       type: Boolean,
       default: true,
       index: true,
       select: false, // Unselectable field
     },
-    isPublished: {
+    product_isPublished: {
       type: Boolean,
       default: false,
       index: true,
       select: false, // Unselectable field
     },
-    deletedAt: {
+    product_deletedAt: {
       type: Date,
       default: null,
       select: false,
@@ -85,14 +85,14 @@ const productSchema = new Schema<IProduct, IProductModel>(
 
 const clothingSchema = new Schema<IClothing, IProductModel>(
   {
-    brand: { type: String, required: true },
-    size: String,
-    material: String,
-    shop: {
+    product_brand: { type: String, required: true },
+    product_size: String,
+    product_material: String,
+    product_shop: {
       type: Schema.Types.ObjectId,
-      ref: 'Shop',
+      ref: SHOP.DOCUMENT_NAME,
     },
-    deletedAt: {
+    product_deletedAt: {
       type: Date,
       default: null,
       select: false,
@@ -106,35 +106,35 @@ const clothingSchema = new Schema<IClothing, IProductModel>(
 
 const electronicSchema = new Schema<IElectronic, IProductModel>(
   {
-    manufacturer: { type: String, required: true },
-    model: String,
-    color: String,
-    shop: {
+    product_manufacturer: { type: String, required: true },
+    product_model: String,
+    product_color: String,
+    product_shop: {
       type: Schema.Types.ObjectId,
-      ref: 'Shop',
+      ref: SHOP.DOCUMENT_NAME,
     },
-    deletedAt: {
-      type: Date,
+    product_deletedAt: {
+      type: Schema.Types.Date,
       default: null,
       select: false,
     },
   },
   {
-    collection: PRODUCT.COLLECTION_ELECTRON_NAME,
+    collection: PRODUCT.COLLECTION_ELECTRONIC_NAME,
     timestamps: true,
   }
 );
 
 const furnitureSchema = new Schema<IFurniture, IProductModel>(
   {
-    brand: { type: String, required: true },
-    size: String,
-    material: String,
-    shop: {
+    product_brand: { type: String, required: true },
+    product_size: String,
+    product_material: String,
+    product_shop: {
       type: Schema.Types.ObjectId,
-      ref: 'Shop',
+      ref: SHOP.DOCUMENT_NAME,
     },
-    deletedAt: {
+    product_deletedAt: {
       type: Date,
       default: null,
       select: false,
@@ -162,7 +162,7 @@ productSchema.index({
 });
 
 productSchema.pre('save', function (next) {
-  this.slug = slugify(this.name, { lower: true });
+  this.product_slug = slugify(this.product_name, { lower: true });
   next();
 });
 
@@ -170,17 +170,20 @@ productSchema.statics.build = async (attrs: IShopAttrs) => {
   return ProductModel.create(attrs);
 };
 
-const ProductModel = model<IProduct, IProductModel>(PRODUCT.DOCUMENT_NAME, productSchema);
-const ClothingModel = model<IProduct, IProductModel>(
+const ProductModel = model<IProduct, IProductModel>(
+  PRODUCT.DOCUMENT_NAME,
+  productSchema
+);
+const ClothingModel = model<IClothing, IProductModel>(
   PRODUCT.DOCUMENT_CLOTHING_NAME,
   clothingSchema
 );
-const FurnitureModel = model<IProduct, IProductModel>(
+const FurnitureModel = model<IFurniture, IProductModel>(
   PRODUCT.DOCUMENT_FURNITURE_NAME,
   furnitureSchema
 );
-const ElectronicModel = model<IProduct, IProductModel>(
-  PRODUCT.DOCUMENT_ELECTRON_NAME,
+const ElectronicModel = model<IElectronic, IProductModel>(
+  PRODUCT.DOCUMENT_ELECTRONIC_NAME,
   electronicSchema
 );
 

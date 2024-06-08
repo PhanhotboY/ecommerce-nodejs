@@ -2,7 +2,7 @@ import { isNullish } from '../utils';
 import { BadRequestError, InternalServerError } from '../core/errors';
 import { DiscountService } from './discount.service';
 import { findCart } from '../models/repositories/cart.repo';
-import { validateChecoutProducts } from '../models/repositories/product.repo';
+import { validateCheckoutProducts } from '../models/repositories/product.repo';
 import './redis.service';
 import { acquireLock, releaseLock } from './redis.service';
 
@@ -60,7 +60,7 @@ export class CheckoutService {
     const finalOrders: ICheckoutOrder[] = [];
 
     for (const order of orders) {
-      const products = (await validateChecoutProducts(
+      const products = (await validateCheckoutProducts(
         order.shopId,
         order.products
       )) as ICheckoutProduct[];
@@ -68,12 +68,19 @@ export class CheckoutService {
       if (products.some((prod) => isNullish(prod)))
         throw new BadRequestError('Check out data is error!');
 
-      const totalPrice = products.reduce((total, prod) => total + prod!.price * prod!.quantity, 0);
+      const totalPrice = products.reduce(
+        (total, prod) => total + prod!.price * prod!.quantity,
+        0
+      );
 
       orderDetails.totalPrice += totalPrice;
 
       if (order.discountCode) {
-        const result = await DiscountService.useDiscount(order.discountCode, userId, products);
+        const result = await DiscountService.useDiscount(
+          order.discountCode,
+          userId,
+          products
+        );
 
         orderDetails.totalDiscount += result.discount;
         orderDetails.final += result.final;
@@ -85,8 +92,16 @@ export class CheckoutService {
     return { orderDetails, finalOrders };
   }
 
-  static async createOrder(userId: string, orders: ICheckoutOrder[], address = {}, payment = {}) {
-    const { orderDetails, finalOrders } = await this.checkoutReview(userId, orders);
+  static async createOrder(
+    userId: string,
+    orders: ICheckoutOrder[],
+    address = {},
+    payment = {}
+  ) {
+    const { orderDetails, finalOrders } = await this.checkoutReview(
+      userId,
+      orders
+    );
     let isAllReserved = true;
     const products = orders.flatMap((order) => order.products);
     console.log('product array::::', products);
@@ -100,7 +115,9 @@ export class CheckoutService {
     });
 
     if (!isAllReserved)
-      throw new BadRequestError('Some items have been updated. Please check again!');
+      throw new BadRequestError(
+        'Some items have been updated. Please check again!'
+      );
 
     // create new order in DB
 

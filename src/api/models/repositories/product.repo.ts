@@ -1,48 +1,72 @@
-import { Types } from 'mongoose';
+import { Query, QuerySelector, Types } from 'mongoose';
 import { ProductModel } from '../product.model';
 import { BadRequestError, InternalServerError } from '../../core/errors';
-import { IProduct } from '../../interfaces/product.interface';
-import { getSkipNumber, isEmptyObj } from '../../utils';
+import { IProduct, IRawProduct } from '../../interfaces/product.interface';
+import { formatAttributeName, getSkipNumber } from '../../utils';
+import { QueryOptions } from 'mongoose';
+import { PRODUCT } from '../../constants';
 
 interface IProductFilter {
-  shop?: string;
-  isDraft?: boolean;
-  isPublished?: boolean;
-  deletedAt?: Date | null | Object;
+  product_shop?: IProduct['product_shop'];
+  isDraft?: IProduct['product_isDraft'];
+  isPublished?: IProduct['product_isPublished'];
+  deletedAt?:
+    | IProduct['product_deletedAt']
+    | QuerySelector<IProduct['product_deletedAt']>
+    | null;
   _id?: string | { $in: Array<any> };
 }
 
 interface IProductOption {
   limit?: string | number;
   page?: string | number;
-  select?: string;
+  select?: Array<keyof IRawProduct>;
 }
 
-const getAllDraftProducts = async (filter: IProductFilter, options: IProductOption) => {
+const getAllProducts = async (
+  filter: IProductFilter = {
+    isPublished: true,
+  },
+  options?: IProductOption
+) => {
   return await queryProduct(
-    { ...filter, isDraft: true, isPublished: false, deletedAt: null },
-    { ...options, select: 'name thumb price ratingsAverage slug' }
-  );
-};
-
-const getAllProducts = async (filter: IProductFilter, options?: IProductOption) => {
-  return await queryProduct(
-    { ...filter, isPublished: true, isDraft: false, deletedAt: null },
-    { ...options, select: 'name thumb price ratingsAverage slug' }
-  );
-};
-
-const getAllDeletedProducts = async (filter: IProductFilter, options: IProductOption) => {
-  return await queryProduct(
-    { ...filter, isPublished: false, isDraft: true, deletedAt: { $ne: null } },
+    { ...filter, isDraft: !filter.isPublished, deletedAt: null },
     {
       ...options,
-      select: 'name thumb price ratingsAverage slug deletedAt',
+      select: [
+        'product_name',
+        'product_thumb',
+        'product_price',
+        'product_ratingsAverage',
+        'product_slug',
+      ],
+    }
+  );
+};
+
+const getAllDeletedProducts = async (
+  filter: IProductFilter,
+  options: IProductOption
+) => {
+  return await queryProduct(
+    { ...filter, deletedAt: { $ne: null } },
+    {
+      ...options,
+      select: [
+        'product_name',
+        'product_thumb',
+        'product_price',
+        'product_ratingsAverage',
+        'product_slug',
+        'product_deletedAt',
+      ],
     }
   );
 };
 
 const getProductDetails = async (productId: string, shopId?: string) => {
+  if (!productId) throw new BadRequestError('Product ID is required!');
+
   const result = await findProduct({
     _id: new Types.ObjectId(productId),
     ...(shopId ? { shop: new Types.ObjectId(shopId) } : {}),
@@ -50,23 +74,26 @@ const getProductDetails = async (productId: string, shopId?: string) => {
     isDraft: false,
   });
 
-  return (result || {}) as NonNullable<typeof result>;
+  return result;
 };
 
 const getProductDetailsForShop = async (productId: string, shopId: string) => {
   const result = await findProduct({
     _id: new Types.ObjectId(productId),
-    shop: new Types.ObjectId(shopId),
+    product_shop: new Types.ObjectId(shopId),
   });
 
-  return (result || {}) as NonNullable<typeof result>;
+  return result;
 };
 
 const unpublishProduct = async (shop: string, productId: string) => {
   const foundProduct = await findProduct({ shop, _id: productId });
   if (!foundProduct) throw new BadRequestError('Product does not exist!');
 
-  const result = await foundProduct.updateOne({ isDraft: true, isPublished: false });
+  const result = await foundProduct.updateOne({
+    isDraft: true,
+    isPublished: false,
+  });
   if (!result) throw new InternalServerError('Cannot unpublish product!');
 
   return result;
@@ -76,7 +103,10 @@ const publishProduct = async (shop: string, productId: string) => {
   const foundProduct = await findProduct({ shop, _id: productId });
   if (!foundProduct) throw new BadRequestError('Product does not exist!');
 
-  const result = await foundProduct.updateOne({ isDraft: false, isPublished: true });
+  const result = await foundProduct.updateOne({
+    isDraft: false,
+    isPublished: true,
+  });
   if (!result) throw new InternalServerError('Cannot unpublish product!');
 
   return result;
@@ -97,7 +127,7 @@ const restoreProduct = async (shop: string, productId: string) => {
   const deletedProduct = await findProduct({ shop, _id: productId }, true);
   if (!deletedProduct) throw new BadRequestError('Product does not exist!');
 
-  const result = await deletedProduct.updateOne({ deletedAt: null });
+  const result = await deletedProduct.updateOne({ product_deletedAt: null });
   if (!result) throw new InternalServerError('Restore product fail!');
 
   return result;
@@ -109,9 +139,9 @@ const deleteProduct = async (shop: string, productId: string) => {
 
   const result = await foundProduct
     .updateOne({
-      deletedAt: Date.now(),
-      isPublished: false,
-      isDraft: true,
+      product_deletedAt: Date.now(),
+      product_isPublished: false,
+      product_isDraft: true,
     })
     .lean();
   if (!result) throw new InternalServerError('Delete product fail!');
@@ -119,7 +149,7 @@ const deleteProduct = async (shop: string, productId: string) => {
   return result;
 };
 
-const validateChecoutProducts = async (
+const validateCheckoutProducts = async (
   shopId: string,
   products: {
     productId: string;
@@ -127,16 +157,17 @@ const validateChecoutProducts = async (
     price: number;
   }[]
 ) => {
-  return Promise.all(
+  return await Promise.all(
     products.map(async (product) => {
       const foundProduct = await getProductDetails(product.productId, shopId);
-
-      if (!isEmptyObj(foundProduct)) {
-        return {
-          ...product,
-          price: foundProduct.price,
-        };
+      if (!foundProduct) {
+        throw new BadRequestError('Product not found');
       }
+
+      return {
+        ...product,
+        price: foundProduct.product_price!,
+      };
     })
   );
 };
@@ -145,8 +176,10 @@ const queryProduct = async (
   filter: IProductFilter,
   { select, limit = 50, page = 1 }: IProductOption
 ) => {
-  return await ProductModel.find<IProduct>(filter)
-    .populate('shop', 'name email -_id')
+  return await ProductModel.find<IProduct>(
+    formatAttributeName(filter, PRODUCT.PREFIX)
+  )
+    .populate('product_shop', 'name email -_id')
     .sort({ updatedAt: -1 })
     .select(select || {})
     .skip(getSkipNumber(+limit || 50, +page || 1))
@@ -156,10 +189,10 @@ const queryProduct = async (
 
 const findProduct = async (query: Object, isDeleted = false) => {
   return await ProductModel.findOne({
-    ...query,
-    deletedAt: { [isDeleted ? '$ne' : '$eq']: null },
+    ...formatAttributeName(query, PRODUCT.PREFIX),
+    product_deletedAt: { [isDeleted ? '$ne' : '$eq']: null },
   })
-    .populate('shop', 'name email -_id')
+    .populate('product_shop', 'name email -_id')
     .select('-__v -updatedAt -createdAt')
     .lean();
 };
@@ -173,8 +206,7 @@ export {
   searchProducts,
   unpublishProduct,
   getProductDetails,
-  getAllDraftProducts,
   getAllDeletedProducts,
-  validateChecoutProducts,
+  validateCheckoutProducts,
   getProductDetailsForShop,
 };
