@@ -1,14 +1,22 @@
 import bcrypt from 'bcrypt';
 
 import { ROLE } from '../constants';
-import { getInfoData } from '../utils';
-import { findByEmail } from './shop.service';
+import { getReturnData } from '../utils';
+import { findShopByEmail } from './shop.service';
 import { ShopModel } from '../models/shop.model';
 import { createTokenPair, generateKeyPair } from '../auth/authUtils';
 import { IShopAttrs, IShopJWTPayload } from '../interfaces/shop.interface';
 import { IKeyToken, IKeyTokenAttrs } from '../interfaces/keyToken.interface';
-import { BadRequestError, ForbiddenError, InternalServerError } from '../core/errors';
-import { removeKeyById, createKeyToken, updateRefreshToken } from './keyToken.service';
+import {
+  BadRequestError,
+  ForbiddenError,
+  InternalServerError,
+} from '../core/errors';
+import {
+  removeKeyById,
+  createKeyToken,
+  updateRefreshToken,
+} from './keyToken.service';
 
 export class AuthService {
   static async signIn({
@@ -20,7 +28,7 @@ export class AuthService {
     password: string;
     refreshToken: string | null;
   }) {
-    const foundShop = await findByEmail(email);
+    const foundShop = await findShopByEmail(email);
 
     if (!foundShop) {
       throw new BadRequestError('Shop is not registered!');
@@ -52,7 +60,9 @@ export class AuthService {
     await createKeyToken(keyTokenAttrs);
 
     return {
-      shop: getInfoData(foundShop, { fields: ['id', 'name', 'email', 'msisdn'] }),
+      shop: getReturnData(foundShop, {
+        fields: ['id', 'name', 'email', 'msisdn'],
+      }),
       tokens,
     };
   }
@@ -72,6 +82,7 @@ export class AuthService {
       password: hashPassword,
       msisdn,
       roles: [ROLE.SHOP],
+      status: 'active',
     });
 
     if (!newShop) {
@@ -94,7 +105,9 @@ export class AuthService {
     });
 
     return {
-      shop: getInfoData(newShop, { fields: ['id', 'name', 'email', 'msisdn'] }),
+      shop: getReturnData(newShop, {
+        fields: ['id', 'name', 'email', 'msisdn'],
+      }),
       tokens,
     };
   }
@@ -116,12 +129,15 @@ export class AuthService {
     if (keyToken.refreshTokensUsed.includes(refreshToken)) {
       // The token is used for the second time => malicious behavior => require user to log in again
       await removeKeyById(keyToken._id as string);
-      throw new ForbiddenError('Something wrong happened. Please login again!!');
+      throw new ForbiddenError(
+        'Something wrong happened. Please login again!!'
+      );
     }
 
     // The token is used for the first time => valid
     // Token not exists in DB
-    if (keyToken.refreshToken !== refreshToken) throw new BadRequestError('Invalid request.');
+    if (keyToken.refreshToken !== refreshToken)
+      throw new BadRequestError('Invalid request.');
 
     // Token exists in DB
     const tokens = createTokenPair({

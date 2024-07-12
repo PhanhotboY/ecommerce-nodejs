@@ -1,13 +1,22 @@
 import { Schema, Types, model } from 'mongoose';
 
 import { DISCOUNT } from '../constants/discount.constant';
-import { IDiscount, IDiscountModel, IDiscountAttrs } from '../interfaces/discount.interface';
+import {
+  IDiscount,
+  IDiscountModel,
+  IDiscountAttrs,
+} from '../interfaces/discount.interface';
+import { PRODUCT, SHOP } from '../constants';
 
 const discountSchema = new Schema<IDiscount, IDiscountModel>(
   {
     name: { type: String, required: true },
     description: { type: String, require: true },
-    type: { type: String, enum: ['fixed_amount', 'percentage'], default: 'fixed_amount' },
+    type: {
+      type: String,
+      enum: ['fixed_amount', 'percentage'],
+      default: 'fixed_amount',
+    },
     code: { type: String, required: true, unique: true },
     value: { type: Number, required: true },
     start_date: { type: Date, required: true },
@@ -17,10 +26,15 @@ const discountSchema = new Schema<IDiscount, IDiscountModel>(
     used_users: { type: [Types.ObjectId], required: true, default: [] },
     quantity_per_user: { type: Number, required: true },
     min_order_value: { type: Number, required: true },
-    shopId: { type: Types.ObjectId, required: true, ref: 'Shop' },
+    shopId: { type: Types.ObjectId, required: true, ref: SHOP.DOCUMENT_NAME },
     isActive: { type: Boolean, required: true, default: true },
     apply_type: { type: String, enum: ['all', 'specific'], required: true },
-    product_ids: { type: [Types.ObjectId], required: true, default: [], ref: 'Product' },
+    product_ids: {
+      type: [Types.ObjectId],
+      required: true,
+      default: [],
+      ref: PRODUCT.DOCUMENT_NAME,
+    },
   },
   {
     timestamps: true,
@@ -35,7 +49,9 @@ const discountSchema = new Schema<IDiscount, IDiscountModel>(
   }
 );
 
-discountSchema.statics.build = async (attrs: IDiscountAttrs) => {
+discountSchema.statics.build = async (
+  attrs: IDiscountAttrs
+): Promise<IDiscount> => {
   return DiscountModel.create(attrs);
 };
 

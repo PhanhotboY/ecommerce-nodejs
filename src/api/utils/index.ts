@@ -7,37 +7,54 @@ declare global {
   }
 }
 
-const omit = (obj: Object, fields?: string[]) => {
+const omit = <T = Object>(obj: T, fields?: string[]): Partial<T> => {
   if (!fields || !fields.length) return obj;
 
-  return (Object.keys(obj) as Array<keyof typeof obj>).reduce((object, field) => {
-    if (!fields.includes(field)) object[field] = obj[field];
+  return (Object.keys(obj as Object) as Array<keyof typeof obj>).reduce<
+    Partial<T>
+  >((object, field) => {
+    if (!fields.includes(field as string)) object[field] = obj[field];
 
     return object;
   }, {});
 };
 
-function getInfoData(
-  obj: Object,
+function getReturnData<T = Object>(
+  obj: T,
   options?: Partial<Record<'fields' | 'without', string[]>>
-): Object {
-  if (Array.isArray(obj)) return obj.map((ele) => getInfoData(ele, {}));
+) {
+  if (!obj) return obj;
 
-  if (obj?._id) {
+  if (obj._id) {
     obj.id = obj._id;
 
     delete obj._id;
   }
 
-  const picked = _.isEmpty(options?.fields || []) ? obj : _.pick(obj, options?.fields!);
-  return omit(picked as Object, options?.without);
+  // @ts-ignore
+  if (obj.toObject) obj = obj.toObject();
+
+  const picked = _.isEmpty(options?.fields || [])
+    ? obj
+    : _.pick(obj, options?.fields!);
+  return omit(picked, options?.without) as Partial<typeof obj>;
+}
+
+function getReturnList<T = Array<any>>(
+  arr: T[],
+  options?: Partial<Record<'fields' | 'without', string[]>>
+) {
+  if (!arr.length) return arr;
+
+  return arr.map((ele) => getReturnData(ele, options));
 }
 
 const isNullish = (val: any) => (val ?? null) === null;
 const isEmptyObj = (obj: Object) => !Object.keys(obj).length;
 const getSkipNumber = (limit: number, page: number) => limit * (page - 1);
 const isObj = (obj: any) => obj instanceof Object && !Array.isArray(obj);
-const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+const capitalizeFirstLetter = (str: string) =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
 const removeNullishElements = (arr: Array<any>) => {
   const final: typeof arr = [];
@@ -71,13 +88,18 @@ const removeNullishAttributes = (obj: Object) => {
 };
 
 const removeNestedNullish = <T>(any: any): T => {
-  if (any instanceof Array) return removeNullishElements(any as Array<any>) as T;
+  if (any instanceof Array)
+    return removeNullishElements(any as Array<any>) as T;
   if (any instanceof Object) return removeNullishAttributes(any as Object) as T;
 
   return any;
 };
 
-function flattenObj(obj: Object, parent?: string, res: { [key: string]: any } = {}) {
+function flattenObj(
+  obj: Object,
+  parent?: string,
+  res: { [key: string]: any } = {}
+) {
   (Object.keys(obj) as Array<keyof typeof obj>).forEach((key) => {
     let propName = parent ? parent + '.' + key : key;
     if (isObj(obj[key])) {
@@ -90,12 +112,28 @@ function flattenObj(obj: Object, parent?: string, res: { [key: string]: any } = 
   return res;
 }
 
+function formatAttributeName<T extends Object = Object>(attrs: T, prefix = '') {
+  const attributes = (Object.keys(attrs) as Array<keyof typeof attrs>).reduce(
+    (acc, key) => {
+      return Object.assign(acc, {
+        [`${key === 'id' || key === '_id' ? '' : prefix}${key as string}`]:
+          attrs[key],
+      });
+    },
+    {}
+  ) as T;
+
+  return attributes;
+}
+
 export {
   isNullish,
   flattenObj,
   isEmptyObj,
-  getInfoData,
+  getReturnData,
+  getReturnList,
   getSkipNumber,
+  formatAttributeName,
   removeNestedNullish,
   capitalizeFirstLetter,
 };
