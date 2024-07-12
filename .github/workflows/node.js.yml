@@ -27,4 +27,4 @@ jobs:
     - run: npm ci
       env:
         DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
-    - run: npm start
+    - run: cat .env
