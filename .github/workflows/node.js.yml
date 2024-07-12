@@ -5,7 +5,7 @@ name: Node.js CI shopDev
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ['master']
 
 jobs:
   build:
@@ -16,13 +16,13 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: echo $DOTENV_KEY
-      env:
-        DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: node index.js
+        env:
+          DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
