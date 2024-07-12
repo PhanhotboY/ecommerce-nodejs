@@ -9,10 +9,7 @@ on:
 
 jobs:
   build:
-
     runs-on: self-hosted
-    environment: gh_env_shopDev
-
     strategy:
       matrix:
         node-version: [20.x]
@@ -27,3 +24,5 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: echo $DOTENV_KEY
+      env:
+        DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
