@@ -1,13 +1,14 @@
-import { Query, QuerySelector, Types } from 'mongoose';
+import { Query, QuerySelector, Types, ObjectId } from 'mongoose';
 import { ProductModel } from '../product.model';
 import { BadRequestError, InternalServerError } from '../../core/errors';
 import { IProduct, IRawProduct } from '../../interfaces/product.interface';
 import { formatAttributeName, getSkipNumber } from '../../utils';
 import { QueryOptions } from 'mongoose';
 import { PRODUCT } from '../../constants';
+import { filter } from 'lodash';
 
 interface IProductFilter {
-  product_shop?: IProduct['product_shop'];
+  shop?: IProduct['product_shop'];
   isDraft?: IProduct['product_isDraft'];
   isPublished?: IProduct['product_isPublished'];
   deletedAt?:
@@ -24,13 +25,11 @@ interface IProductOption {
 }
 
 const getAllProducts = async (
-  filter: IProductFilter = {
-    isPublished: true,
-  },
+  { isPublished = true, ...filter }: IProductFilter,
   options?: IProductOption
 ) => {
   return await queryProduct(
-    { ...filter, isDraft: !filter.isPublished, deletedAt: null },
+    { ...filter, isDraft: !isPublished, deletedAt: null },
     {
       ...options,
       select: [
@@ -70,8 +69,8 @@ const getProductDetails = async (productId: string, shopId?: string) => {
   const result = await findProduct({
     _id: new Types.ObjectId(productId),
     ...(shopId ? { shop: new Types.ObjectId(shopId) } : {}),
-    isPublished: true,
-    isDraft: false,
+    product_isPublished: true,
+    product_isDraft: false,
   });
 
   return result;
@@ -87,12 +86,15 @@ const getProductDetailsForShop = async (productId: string, shopId: string) => {
 };
 
 const unpublishProduct = async (shop: string, productId: string) => {
-  const foundProduct = await findProduct({ shop, _id: productId });
+  const foundProduct = await findProduct({
+    shop,
+    _id: new Types.ObjectId(productId),
+  });
   if (!foundProduct) throw new BadRequestError('Product does not exist!');
 
   const result = await foundProduct.updateOne({
-    isDraft: true,
-    isPublished: false,
+    product_isDraft: true,
+    product_isPublished: false,
   });
   if (!result) throw new InternalServerError('Cannot unpublish product!');
 
@@ -100,12 +102,15 @@ const unpublishProduct = async (shop: string, productId: string) => {
 };
 
 const publishProduct = async (shop: string, productId: string) => {
-  const foundProduct = await findProduct({ shop, _id: productId });
+  const foundProduct = await findProduct({
+    shop,
+    _id: new Types.ObjectId(productId),
+  });
   if (!foundProduct) throw new BadRequestError('Product does not exist!');
 
   const result = await foundProduct.updateOne({
-    isDraft: false,
-    isPublished: true,
+    product_isDraft: false,
+    product_isPublished: true,
   });
   if (!result) throw new InternalServerError('Cannot unpublish product!');
 
@@ -114,7 +119,11 @@ const publishProduct = async (shop: string, productId: string) => {
 
 const searchProducts = async (search: string) => {
   const result = await ProductModel.find(
-    { $text: { $search: search }, isDeleted: null, isPublished: true },
+    {
+      $text: { $search: search },
+      product_isDeleted: null,
+      product_isPublished: true,
+    },
     { score: { $meta: 'textScore' } }
   )
     .select('name thumb slug price ratingsAverage')
@@ -124,7 +133,10 @@ const searchProducts = async (search: string) => {
 };
 
 const restoreProduct = async (shop: string, productId: string) => {
-  const deletedProduct = await findProduct({ shop, _id: productId }, true);
+  const deletedProduct = await findProduct(
+    { shop, _id: new Types.ObjectId(productId) },
+    true
+  );
   if (!deletedProduct) throw new BadRequestError('Product does not exist!');
 
   const result = await deletedProduct.updateOne({ product_deletedAt: null });
@@ -193,8 +205,7 @@ const findProduct = async (query: Object, isDeleted = false) => {
     product_deletedAt: { [isDeleted ? '$ne' : '$eq']: null },
   })
     .populate('product_shop', 'name email -_id')
-    .select('-__v -updatedAt -createdAt')
-    .lean();
+    .select('-__v -updatedAt -createdAt');
 };
 
 export {

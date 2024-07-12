@@ -115,9 +115,10 @@ function flattenObj(
 function formatAttributeName<T extends Object = Object>(attrs: T, prefix = '') {
   const attributes = (Object.keys(attrs) as Array<keyof typeof attrs>).reduce(
     (acc, key) => {
-      if (key === 'id' || key === '_id') return acc;
-
-      return Object.assign(acc, { [`${prefix}${key as string}`]: attrs[key] });
+      return Object.assign(acc, {
+        [`${key === 'id' || key === '_id' ? '' : prefix}${key as string}`]:
+          attrs[key],
+      });
     },
     {}
   ) as T;

@@ -22,6 +22,16 @@ export class ProductService {
 
     const newProduct = await Strategy.createProduct(product);
 
+    await NotificationService.pushNotification({
+      type: NOTIFICATION.TYPE.PRODUCT.NEW,
+      senderId: product.shop,
+      receiverId: 0,
+      options: {
+        product_name: newProduct.product_name,
+        shop_name: newProduct.product_shop,
+      },
+    });
+
     return getReturnData(newProduct, {
       without: ['__v', 'createdAt', 'updatedAt'],
     });
@@ -32,18 +42,15 @@ export class ProductService {
   }
 
   static async getAllPublished({ shop, limit, page }: IProductQuery) {
-    return getAllProducts({ product_shop: shop }, { limit, page });
+    return getAllProducts({ shop }, { limit, page });
   }
 
   static async getAllDraftProducts({ shop, limit, page }: IProductQuery) {
-    return getAllProducts(
-      { product_shop: shop, isPublished: false },
-      { limit, page }
-    );
+    return getAllProducts({ shop, isPublished: false }, { limit, page });
   }
 
   static async getAllDeletedProducts({ shop, limit, page }: IProductQuery) {
-    return getAllDeletedProducts({ product_shop: shop }, { limit, page });
+    return getAllDeletedProducts({ shop }, { limit, page });
   }
 
   static async getProductDetails(productId: string) {
@@ -59,7 +66,19 @@ export class ProductService {
   }
 
   static async publishProduct(shop: string, productId: string) {
-    return publishProduct(shop, productId);
+    const result = await publishProduct(shop, productId);
+
+    await NotificationService.pushNotification({
+      type: NOTIFICATION.TYPE.PRODUCT.NEW,
+      senderId: shop,
+      receiverId: 0,
+      options: {
+        productId,
+        shop,
+      },
+    });
+
+    return result;
   }
 
   static async unpublishProduct(shop: string, productId: string) {
@@ -114,6 +133,8 @@ export class ProductService {
 
 // init factories
 import '../factories/product';
+import { NotificationService } from './notification.service';
+import { NOTIFICATION } from '../constants/notification.constant';
 
 interface IProductQuery {
   shop?: string;
