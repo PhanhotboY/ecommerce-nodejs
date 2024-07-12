@@ -23,6 +23,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - run: npm ci
-      - run: ts-node index.ts
+      - run: which ts-node
         env:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
