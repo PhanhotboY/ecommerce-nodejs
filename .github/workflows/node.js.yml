@@ -11,7 +11,7 @@ jobs:
   build:
 
     runs-on: self-hosted
-    environment: ci
+    environment: gh_env_shopDev
     env:
       DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
 
