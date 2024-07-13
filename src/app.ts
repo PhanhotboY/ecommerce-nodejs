@@ -4,7 +4,10 @@ import express from 'express';
 import compression from 'compression';
 import 'express-async-errors';
 
-import { errorHandler, notFoundHandler } from './api/middlewares/error.middleware';
+import {
+  errorHandler,
+  notFoundHandler,
+} from './api/middlewares/error.middleware';
 
 require('dotenv').config();
 

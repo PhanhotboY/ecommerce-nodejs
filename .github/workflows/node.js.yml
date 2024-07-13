@@ -24,6 +24,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
 
-      - run: npx ts-node index.ts
+      - run: npm start
+
         env:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
