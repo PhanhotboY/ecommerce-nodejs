@@ -29,7 +29,7 @@ export abstract class ProductFactoryAbstract {
   abstract createStrategy(): typeof ProductStrategy;
 }
 
-const files = fs.readdirSync('./src/api/factories/product');
+const files = fs.readdirSync(__dirname);
 
 class RegisterSingleton {
   private static instance: RegisterSingleton;
