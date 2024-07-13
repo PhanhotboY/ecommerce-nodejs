@@ -6,6 +6,14 @@ const router = express.Router();
 
 router.use(pushLog2Discord);
 //check api key
+
+router.get('/check-status', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Connect established successfully!',
+  });
+});
+
 router.use(checkApiKey);
 //check api key's permission
 router.use(checkPermission('0000'));
