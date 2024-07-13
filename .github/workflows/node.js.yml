@@ -25,8 +25,8 @@ jobs:
       - run: npm ci
 
       - name: Compile Typescript
-        run: tsc
+        run: npx tsc
 
-      - run: pm2 start -i max dist/server.js
+      - run: npx pm2 start -i max dist/server.js
         env:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
