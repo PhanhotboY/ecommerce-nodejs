@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
 
-      - run: npm start
+      - run: pm2 start -i max dist/server.js
 
         env:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}

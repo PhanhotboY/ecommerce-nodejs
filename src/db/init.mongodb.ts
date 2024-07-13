@@ -42,6 +42,7 @@ class MongoDB {
   }
 }
 
+// @ts-ignore
 mongoose.connection.on('open', () => {
   const numConnections = mongoose.connections.length;
   const numCores = os.cpus().length;
