@@ -7,3 +7,4 @@ uploads
 !.env.project
 !.env.vault
 .env.me
+dist

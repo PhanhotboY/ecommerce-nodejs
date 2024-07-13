@@ -1,5 +1,4 @@
 import { Client, Colors, GatewayIntentBits, TextChannel } from 'discord.js';
-import OpenAI from 'openai';
 import {
   ChatSession,
   GoogleGenerativeAI,
