@@ -1,4 +1,5 @@
 import { HydratedDocument, Model } from 'mongoose';
+import { SHOP } from '../constants';
 
 interface IRawShop {
   _id: string;
@@ -6,9 +7,8 @@ interface IRawShop {
   email: string;
   password: string;
   msisdn: string;
-  status: 'active' | 'inactive';
+  status: Values<typeof SHOP.STATUS>;
   verify: boolean;
-  roles: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,9 +20,8 @@ export interface IShopAttrs {
   email: string;
   password: string;
   msisdn: string;
-  status?: 'active' | 'inactive';
+  status?: IShop['status'];
   verify?: boolean;
-  roles?: string[];
 }
 
 export interface IShopJWTPayload {
@@ -33,7 +32,7 @@ export interface IShopJWTPayload {
 export interface IShopResponseData {
   name: string;
   email: string;
-  status: 'active' | 'inactive';
+  status: IShop['status'];
   verify: boolean;
 }
 

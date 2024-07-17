@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.12.0",
+    "accesscontrol": "^2.2.1",
     "amqplib": "^0.10.4",
     "bcrypt": "^5.1.0",
     "cloudinary": "^2.2.0",
