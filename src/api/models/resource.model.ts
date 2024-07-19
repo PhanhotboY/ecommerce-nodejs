@@ -5,6 +5,7 @@ import {
   IResourceModel,
 } from '../interfaces/resource.interface';
 import { RESOURCE } from '../constants/resource.constant';
+import { formatAttributeName } from '../utils';
 
 const ResourceSchema = new Schema<IResource, IResourceModel>(
   {
@@ -19,7 +20,7 @@ const ResourceSchema = new Schema<IResource, IResourceModel>(
 );
 
 ResourceSchema.statics.build = (attrs: IRawResource): Promise<IResource> => {
-  return ResourceModel.create(attrs);
+  return ResourceModel.create(formatAttributeName(attrs, RESOURCE.PREFIX));
 };
 
 export const ResourceModel = model<IResource, IResourceModel>(

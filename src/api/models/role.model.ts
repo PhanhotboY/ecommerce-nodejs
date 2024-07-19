@@ -1,6 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
 import { IRole, IRoleModel } from '../interfaces/role.interface';
 import { RESOURCE, ROLE } from '../constants';
+import { formatAttributeName } from '../utils';
 
 const RoleSchema = new Schema<IRole, IRoleModel>(
   {
@@ -27,7 +28,7 @@ const RoleSchema = new Schema<IRole, IRoleModel>(
 );
 
 RoleSchema.statics.build = (attrs: IRole): Promise<IRole> => {
-  return RoleModel.create(attrs);
+  return RoleModel.create(formatAttributeName(attrs, ROLE.PREFIX));
 };
 
 export const RoleModel = model<IRole, IRoleModel>(

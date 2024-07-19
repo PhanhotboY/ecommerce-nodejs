@@ -8,7 +8,7 @@ export interface IRawResource {
 
 export interface IResource extends HydratedDocument<IRawResource> {}
 
-interface IResourceAttrs {
+export interface IResourceAttrs {
   name: IRawResource['src_name'];
   slug: IRawResource['src_slug'];
   description: IRawResource['src_description'];

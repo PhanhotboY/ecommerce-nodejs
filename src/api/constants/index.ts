@@ -8,6 +8,7 @@ export * from './comment.constant';
 export * from './discount.constant';
 export * from './inventory.constant';
 export * from './notification.constant';
+export * from './user.constant';
 
 export const KEYTOKEN = {
   COLLECTION_NAME: 'KeyTokens',
