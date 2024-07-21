@@ -1,4 +1,6 @@
+import { randomBytes } from 'crypto';
 import _ from 'lodash';
+import slugify from 'slugify';
 
 declare global {
   interface Object {
@@ -25,19 +27,21 @@ function getReturnData<T = Object>(
 ) {
   if (!obj) return obj;
 
-  if (obj._id) {
+  // @ts-ignore
+  if (obj.toObject) obj = obj.toObject();
+
+  if (obj?._id) {
     obj.id = obj._id;
 
     delete obj._id;
   }
 
-  // @ts-ignore
-  if (obj.toObject) obj = obj.toObject();
-
   const picked = _.isEmpty(options?.fields || [])
     ? obj
     : _.pick(obj, options?.fields!);
-  return omit(picked, options?.without) as Partial<typeof obj>;
+  return omit(picked, [...(options?.without || []), '__v']) as Partial<
+    typeof obj
+  >;
 }
 
 function getReturnList<T = Array<any>>(
@@ -126,7 +130,17 @@ function formatAttributeName<T extends Object = Object>(attrs: T, prefix = '') {
   return attributes;
 }
 
+function getSlug(str: string) {
+  return slugify(
+    str.split(' ').reduce((acc, cur) => acc + cur.slice(0, 1), '') +
+      ' ' +
+      randomBytes(4).toString('hex'),
+    { lower: true }
+  );
+}
+
 export {
+  getSlug,
   isNullish,
   flattenObj,
   isEmptyObj,

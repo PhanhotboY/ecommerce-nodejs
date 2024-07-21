@@ -27,6 +27,24 @@ export class RBACController {
     });
   }
 
+  static async getRole(req: Request, res: Response, next: NextFunction) {
+    return OK({
+      res,
+      message: 'Role fetched successfully',
+      metadata: await RBACService.getRoleBySlug(req.params.slug),
+    });
+  }
+
+  static async getPermissions(req: Request, res: Response, next: NextFunction) {
+    return OK({
+      res,
+      message: 'Permissions fetched successfully',
+      metadata: await RBACService.getPermissions(
+        (req.params.slug as string) || ''
+      ),
+    });
+  }
+
   static async createRole(req: Request, res: Response, next: NextFunction) {
     return OK({
       res,

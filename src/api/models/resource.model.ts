@@ -9,8 +9,8 @@ import { formatAttributeName } from '../utils';
 
 const ResourceSchema = new Schema<IResource, IResourceModel>(
   {
-    src_name: { type: String, required: true },
-    src_slug: { type: String, required: true },
+    src_name: { type: String, required: true, unique: true },
+    src_slug: { type: String, required: true, unique: true },
     src_description: { type: String, required: true },
   },
   {

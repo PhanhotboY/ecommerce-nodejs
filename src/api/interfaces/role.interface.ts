@@ -3,7 +3,7 @@ import { ROLE } from '../constants';
 
 interface IGrant {
   resource: string;
-  actions: string;
+  action: string[];
   attributes: string;
 }
 
@@ -19,7 +19,7 @@ export type IRole = HydratedDocument<IRawRole>;
 
 export interface IRoleAttrs {
   name: string;
-  slug: string;
+  slug?: string;
   status?: IRole['rol_status'];
   description: string;
   grants: IGrant[];

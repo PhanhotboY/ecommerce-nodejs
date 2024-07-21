@@ -1,7 +1,7 @@
 export const ROLE = {
   DOCUMENT_NAME: 'Role',
   COLLECTION_NAME: 'roles',
-  PREFIX: 'role_',
+  PREFIX: 'rol_',
   STATUS: {
     ACTIVE: 'ACTIVE',
     BLOCK: 'BLOCK',

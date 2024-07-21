@@ -23,8 +23,10 @@ router.use('/discounts', require('./discount'));
 router.use('/checkout', require('./checkout'));
 router.use('/products', require('./product'));
 router.use('/comments', require('./comment'));
+router.use('/profile', require('./profile'));
 router.use('/upload', require('./upload'));
 router.use('/cart', require('./cart'));
+router.use('/rbac', require('./rbac'));
 router.use('/', require('./auth'));
 
 module.exports = router;

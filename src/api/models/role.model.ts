@@ -5,8 +5,8 @@ import { formatAttributeName } from '../utils';
 
 const RoleSchema = new Schema<IRole, IRoleModel>(
   {
-    rol_name: { type: String, required: true },
-    rol_slug: { type: String, required: true },
+    rol_name: { type: String, required: true, unique: true },
+    rol_slug: { type: String, required: true, unique: true },
     rol_status: { type: String, required: true },
     rol_description: { type: String, required: true },
     rol_grants: [
@@ -16,7 +16,7 @@ const RoleSchema = new Schema<IRole, IRoleModel>(
           required: true,
           ref: RESOURCE.DOCUMENT_NAME,
         },
-        actions: { type: String, required: true },
+        action: { type: Array<String>, required: true },
         attributes: { type: String, default: '*' },
       },
     ],
@@ -27,7 +27,7 @@ const RoleSchema = new Schema<IRole, IRoleModel>(
   }
 );
 
-RoleSchema.statics.build = (attrs: IRole): Promise<IRole> => {
+RoleSchema.statics.build = (attrs: IRole) => {
   return RoleModel.create(formatAttributeName(attrs, ROLE.PREFIX));
 };
 

@@ -20,7 +20,7 @@ class MongoDB {
     }
 
     mongoose
-      .connect(`mongodb+srv://${dbUser}:${dbPwd}@${dbHost}/${dbName}`)
+      .connect(`mongodb://${dbUser}:${dbPwd}@${dbHost}:${dbPort}/${dbName}`)
       .then(() => {
         console.log('-----Connection established successfully');
       })
