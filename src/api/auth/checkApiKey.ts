@@ -3,15 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { HEADER } from '../constants';
 import { ForbiddenError } from '../core/errors/ForbiddenError';
 import { findActiveApiKey } from '../services/apiKey.service';
-import { IApiKey } from '../interfaces/apiKey.interface';
 
-declare global {
-  namespace Express {
-    export interface Request {
-      objKey: IApiKey;
-    }
-  }
-}
 const checkApiKey = async (req: Request, res: Response, next: NextFunction) => {
   const apiKey = req.headers[HEADER.API_KEY]?.toString();
 

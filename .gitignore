@@ -8,3 +8,5 @@ uploads
 !.env.vault
 .env.me
 dist
+
+src/logs
