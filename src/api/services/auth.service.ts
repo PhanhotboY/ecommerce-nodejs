@@ -81,7 +81,6 @@ export class AuthService {
       email,
       password: hashPassword,
       msisdn,
-      roles: [ROLE.SHOP],
       status: 'active',
     });
 

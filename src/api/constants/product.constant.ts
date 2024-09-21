@@ -8,4 +8,16 @@ export const PRODUCT = {
   COLLECTION_ELECTRONIC_NAME: 'Electronics',
   COLLECTION_FURNITURE_NAME: 'Furnitures',
   PREFIX: 'product_',
+  SPU: {
+    DOCUMENT_NAME: 'SPU',
+    COLLECTION_NAME: 'SPUs',
+    PREFIX: 'spu_',
+    LENGTH: 10,
+  },
+  SKU: {
+    DOCUMENT_NAME: 'SKU',
+    COLLECTION_NAME: 'SKUs',
+    PREFIX: 'sku_',
+    LENGTH: 10,
+  },
 };

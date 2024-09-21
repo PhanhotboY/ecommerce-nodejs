@@ -35,10 +35,6 @@ const shopSchema = new Schema<IShop, IShopModel>(
       type: Schema.Types.Boolean,
       default: false,
     },
-    roles: {
-      type: [String],
-      default: [],
-    },
   },
   {
     timestamps: true,
@@ -58,4 +54,7 @@ shopSchema.statics.build = async (attrs: IShopAttrs) => {
   return ShopModel.create(attrs);
 };
 
-export const ShopModel = model<IShop, IShopModel>(SHOP.DOCUMENT_NAME, shopSchema);
+export const ShopModel = model<IShop, IShopModel>(
+  SHOP.DOCUMENT_NAME,
+  shopSchema
+);

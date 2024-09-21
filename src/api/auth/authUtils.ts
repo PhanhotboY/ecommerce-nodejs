@@ -5,7 +5,6 @@ import crypto from 'crypto';
 function createTokenPair({
   payload,
   privateKey,
-  publicKey,
 }: {
   payload: IShopJWTPayload;
   privateKey: string;

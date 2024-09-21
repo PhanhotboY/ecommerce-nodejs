@@ -1,6 +1,17 @@
 export * from './app.constant';
 export * from './shop.constant';
 export * from './product.constant';
+export * from './resource.constant';
+export * from './role.constant';
+export * from './cart.constant';
+export * from './comment.constant';
+export * from './discount.constant';
+export * from './template.constant';
+export * from './inventory.constant';
+export * from './notification.constant';
+export * from './user.constant';
+export * from './otp.constant';
+export * from './redis.constant';
 
 export const KEYTOKEN = {
   COLLECTION_NAME: 'KeyTokens',

@@ -7,9 +7,11 @@ import {
   IElectronic,
   IFurniture,
   IProduct,
+  IProductAttrs,
   IProductModel,
 } from '../interfaces/product.interface';
 import { IShopAttrs } from '../interfaces/shop.interface';
+import { formatAttributeName } from '../utils';
 
 const productSchema = new Schema<IProduct, IProductModel>(
   {
@@ -166,8 +168,8 @@ productSchema.pre('save', function (next) {
   next();
 });
 
-productSchema.statics.build = async (attrs: IShopAttrs) => {
-  return ProductModel.create(attrs);
+productSchema.statics.build = async (attrs: IProductAttrs) => {
+  return ProductModel.create(formatAttributeName(attrs, PRODUCT.PREFIX));
 };
 
 const ProductModel = model<IProduct, IProductModel>(
