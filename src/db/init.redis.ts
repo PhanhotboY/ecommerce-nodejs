@@ -1,4 +1,7 @@
-import { createClient } from 'redis';
+import { createClient, RedisClientType } from 'redis';
+
+import { REDIS } from '../api/constants';
+import { InternalServerError } from '../api/core/errors';
 
 const client = createClient({
   password: process.env.DEV_REDIS_PASSWORD,
@@ -10,6 +13,8 @@ const client = createClient({
 
 class Redis {
   private static instance: Redis;
+  private client = client;
+  private retryTimmer: NodeJS.Timeout | null = null;
 
   constructor() {
     this.connect();
@@ -17,28 +22,70 @@ class Redis {
 
   connect() {
     (async () => await client.connect())();
+    this.handleConnectionEvent();
   }
 
-  static async getInstance() {
+  static getInstance() {
     if (!this.instance) {
       this.instance = new Redis();
     }
 
     return this.instance;
   }
+
+  getClient() {
+    return this.client;
+  }
+
+  handleConnectionEvent() {
+    // @ts-ignore
+    this.client.on(REDIS.EVENTS.ERROR, () => {
+      console.log('Error in Redis connection');
+      this.startRetryTimmer();
+    });
+
+    // @ts-ignore
+    this.client.on(REDIS.EVENTS.END, () => {
+      console.log('Redis connection ended');
+      this.startRetryTimmer();
+    });
+
+    // @ts-ignore
+    this.client.on(REDIS.EVENTS.CONNECT, () => {
+      console.log('Redis connected');
+
+      if (this.retryTimmer) {
+        clearTimeout(this.retryTimmer);
+      }
+    });
+
+    // @ts-ignore
+    this.client.on(REDIS.EVENTS.RECONNECTING, () => {
+      console.log('Redis reconnecting');
+    });
+
+    // @ts-ignore
+    this.client.on(REDIS.EVENTS.READY, async () => {
+      const { id, laddr, flags, totMem, user, cmd, resp } =
+        await this.client.clientInfo();
+
+      if (this.retryTimmer) clearTimeout(this.retryTimmer);
+
+      console.log(
+        `Redis info->>>id: ${id}, user: ${user},  laddr: ${laddr}, totMem: ${
+          (totMem || 0) / 1024
+        }, resp: ${resp}, flags: ${flags}, cmd: ${cmd}`
+      );
+    });
+  }
+
+  startRetryTimmer() {
+    if (this.retryTimmer) clearTimeout(this.retryTimmer);
+
+    this.retryTimmer = setTimeout(() => {
+      throw new InternalServerError(REDIS.RETRY_MESSAGE.VN);
+    }, REDIS.RETRY_TIMEOUT);
+  }
 }
 
-// @ts-ignore
-client.on('ready', async () => {
-  const { id, laddr, flags, totMem, user, cmd, resp } =
-    await client.clientInfo();
-
-  console.log(
-    `Redis info->>>id: ${id}, user: ${user},  laddr: ${laddr}, totMem: ${
-      (totMem || 0) / 1024
-    }, resp: ${resp}, flags: ${flags}, cmd: ${cmd}`
-  );
-});
-
 export const redisInstance = Redis.getInstance();
-export { client };

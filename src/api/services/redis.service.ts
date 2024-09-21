@@ -1,8 +1,14 @@
 import { APP } from '../constants';
-import { client } from '../../db/init.redis';
+import { redisInstance } from '../../db/init.redis';
 import { reserveInventory } from './inventory.service';
 
-const acquireLock = async (userId: string, productId: string, quantity: number) => {
+const client = redisInstance.getClient();
+
+const acquireLock = async (
+  userId: string,
+  productId: string,
+  quantity: number
+) => {
   const lockKey = `${APP.LOCK_PREFIX}${productId}`;
 
   for (let times = 0; times < APP.ORDER_RETRY_TIMES; times++) {
